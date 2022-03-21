@@ -1,24 +1,34 @@
 import java.util.*;
 
-public class welcome {
+public class alphabet {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
-        int numPeople = scan.nextInt();
-        while (numPeople != 0){
-            FordFulkerson teamNetwork = new FordFulkerson(44);
-            for (int i = 0; i < numPeople; i++){
-                String firstName = scan.next();
-                String lastName = scan.next();
-                teamNetwork.add(teamNetwork.source, firstName.charAt(0) - 'A', 1);
-                teamNetwork.add(lastName.charAt(0) - 'A' + 26, teamNetwork.sink, 1);
-                teamNetwork.add(firstName.charAt(0) - 'A', lastName.charAt(0) - 'A' + 26, 1);
-            }
-            System.out.println(teamNetwork.ff());
-            numPeople = scan.nextInt();
-        }
+        int numCases = scan.nextInt();
+        for (int i = 0; i < numCases; i++){
+            String redLetters = scan.next();
+            String greenLetters = scan.next();
+            FordFulkerson lettersNetwork = new FordFulkerson(redLetters.length() + greenLetters.length());
 
+            for (int j = 0; j < redLetters.length(); j++){
+                lettersNetwork.add(lettersNetwork.source, j , 1);
+            }
+
+            for (int j = 0; j < greenLetters.length(); j++){
+                lettersNetwork.add(j + redLetters.length(), lettersNetwork.sink, 1);
+            }
+
+            for (int j = 0; j < redLetters.length(); j++){
+                for (int k = 0; k < greenLetters.length(); k++){
+                    if (Math.abs(redLetters.charAt(j) - greenLetters.charAt(k)) >= 3){
+                        lettersNetwork.add(j, k + redLetters.length(), 1);
+                    }
+                }
+            }
+
+            System.out.println(lettersNetwork.ff());
+        }
     }
-     public static class FordFulkerson {
+    public static class FordFulkerson {
 
         // Stores graph.
         public int[][] cap;
