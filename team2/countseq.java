@@ -54,12 +54,11 @@ public class countseq
 		return rec(s.substring(1), t);
 	}
 
-	public static int dyn(String s, String t)
+	public static long dyn(String s, String t)
 	{
 		int sLen = s.length();
 		int tLen = t.length();
-		int [][] dp = new int[tLen+1][sLen+1];
-		int count = 0;
+		long [][] dp = new long[tLen+1][sLen+1];
 
 		for (int i = 1; i <= tLen; i++)
 		{
@@ -85,7 +84,7 @@ public class countseq
 	public static void testing(String s, String t)
 	{
 		System.out.println(s + " " + t);
-		System.out.println("Recursion: " + rec(s, t));
+		// System.out.println("Recursion: " + rec(s, t));
 		System.out.println("Dynamic: " + dyn(s, t));
 		System.out.println();
 	}
@@ -100,9 +99,9 @@ public class countseq
 			String s = input.next();
 			String t = input.next();
 
-			testing(s, t);
+			// testing(s, t);
 
-			// System.out.println(dyn(s, t));
+			System.out.println(dyn(s, t));
 		}
 	}
 }
