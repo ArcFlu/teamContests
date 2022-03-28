@@ -63,17 +63,20 @@ public class countseq
 
 		for (int i = 1; i <= tLen; i++)
 		{
-			int booster = 0;
+			int booster = 1;
 			for (int j = 1; j <= sLen; j++)
 			{
 				if (t.charAt(i-1) == s.charAt(j-1))
-					dp[i][j] = Math.max(1, dp[i-1][j-1] + dp[i][j-1]);
+					if (i == 1)
+						dp[i][j] = booster++;
+					else
+						dp[i][j] = dp[i-1][j-1] + dp[i][j-1];
 				else
 					dp[i][j] = dp[i][j-1];
 
-				System.out.print(dp[i][j]+" ");
+				// System.out.print(dp[i][j]+" ");
 			}
-			System.out.println();
+			// System.out.println();
 		}
 
 		return dp[tLen][sLen];
@@ -97,9 +100,9 @@ public class countseq
 			String s = input.next();
 			String t = input.next();
 
-			testing(s, t);
+			// testing(s, t);
 
-			// System.out.println(dyn(s, t));
+			System.out.println(dyn(s, t));
 		}
 	}
 }
