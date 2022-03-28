@@ -94,15 +94,15 @@ public class countseq
 	{
 		Scanner input = new Scanner(System.in);
 
-		int numCases = input.nextInt();
-		for (int i = 0; i < numCases; i++)
+		long numCases = input.nextLong();
+		while (input.hasNext())
 		{
 			String s = input.next();
 			String t = input.next();
 
-			// testing(s, t);
+			testing(s, t);
 
-			System.out.println(dyn(s, t));
+			// System.out.println(dyn(s, t));
 		}
 	}
 }
