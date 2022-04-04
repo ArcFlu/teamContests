@@ -6,41 +6,30 @@ public class teamwork
     {
         Scanner input = new Scanner(System.in);
         int numCases = input.nextInt();
-        for (int i = 0; i < numCases; i++)
+
+        for (int currCase = 0; currCase < numCases; currCase++)
         {
             int numCows = input.nextInt();
             int maxTeamSize = input.nextInt();
-            long[] arr = new long[numCows];
-            for (int j = 0; j < numCows; j++)
-                arr[j] = input.nextLong();
-
-            Arrays.sort(arr);
-            int bottom = 0;
-            int top = numCows-1;
-            int teamSize = 1;
-            for (int j = 0; j < numCows; j++)
+            long[] skill = new long[numCows+1];
+            long[] answer = new long[numCows+1];
+            for (int i = 1; i <= numCows; i++)
+                skill[i] = input.nextLong();
+            
+            for (int i = 1; i <= numCows; i++)
             {
-                if (bottom >= top)
-                    break;
-
-                if (arr[bottom] < arr[top])
+                answer[i] = skill[i];
+                long max = skill[i];
+                for (int j = 1; i-j+1 > 0 && j <= maxTeamSize; j++)
                 {
-                    arr[bottom] = arr[top];
-                    teamSize++;
-                    bottom++;
-                }
-                if (teamSize >= maxTeamSize)
-                {
-                    top--;
-                    teamSize = 1;
+                    if (answer[i] < answer[i-j] + j*max)
+                        answer[i] = answer[i-j] + j*max;
+                    if (max < skill[i-j])
+                        max = skill[i-j];
                 }
             }
 
-            long total = 0;
-            for (int j = 0; j < numCows; j++)
-                total += arr[j];
-
-            System.out.println(total);
+            System.out.println(answer[numCows]);
         }
     }
 }
