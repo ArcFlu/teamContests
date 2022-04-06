@@ -1,82 +1,129 @@
 import java.util.*;
 
-public class mixedset {
-    public static int desiredRank;
-    public static int desiredLength;
+public class mixedset
+{
+    // need static variables to ensure consistency
+    static int[] solution;
+    static int count;
 
-    public static int maxInt;
-    public static int rank;
-    public static void main(String[] args) {
-        Scanner scan = new Scanner(System.in);
-        int numCases = scan.nextInt();
-        for (int n = 0; n < numCases; n++){
-            maxInt = scan.nextInt();
-            desiredLength = scan.nextInt();
-            desiredRank = scan.nextInt();
-            int[] comboArray = new int[desiredLength];
-            boolean[] usedArray = new boolean[50];
-            usedArray[0] = true;
+    // Working recursive solution.
+    // Encounters a stack overflow error on large inputs.
+    public static boolean findSolution (int n, int s, int k)
+    {
+        if (count == k)
+            return true;
+        else if (count > k)
+            return false;
 
-            rank = 0;
-
-            // remove differences -> iterate number until new difference -> check. If max go back.
-            recursiveNextRank(comboArray, usedArray, 0);
-
-            System.out.println(Arrays.toString(comboArray));
+        bump(n, s);
+        HashSet<Integer> set = new HashSet<>();
+        for (int i = s-1; i >= 1; i--)
+        {
+            for (int j = i-1; j >= 0; j--)
+            {
+                if (set.add(solution[i] - solution[j]) == false)
+                {
+                    bump(n, s);
+                    return findSolution(n, s, k);
+                }
+            }
         }
+
+        count++;
+        return findSolution(n, s, k);
     }
 
-    public static boolean recursiveNextRank(int[] comboArray, boolean[] used, int currentIndex){
-        if (currentIndex == desiredLength){
-            boolean flag = false;
-            for (int i = 0; i < comboArray.length; i++){
-                if (used[comboArray[currentIndex - 1] - comboArray[i]]){
-                    flag = true;
+    // Experimental solution.
+    public static boolean findSolutionExperimental (int n, int s, int k)
+    {
+        HashSet<Integer> set = new HashSet<>();
+        boolean flag = true;
+        while (flag)
+        {
+            if (count == k)
+                return true;
+            
+            bump(n, s);
+            boolean isValid = true;
+            for (int i = s-1; i >= 1; i--)
+            {
+                for (int j = i-1; j >= 0; j--)
+                {
+                    if (set.add(solution[i] - solution[j]) == false)
+                    {
+                        bump(n, s);
+                        isValid = false;
+                        break;
+                    }
+                }
+                if (!isValid)
+                {
                     break;
                 }
             }
 
-            if (flag)
-                rank++;
-
-            if (rank == desiredRank)
-                return true;
-        }
-
-
-        int start = 1;
-
-        // find the next integer that gives a unique pairwise diff
-        boolean flag = false;
-        if (currentIndex > 0){
-            start = comboArray[currentIndex-1] + 1;
-            while (!flag){
-                flag = pairDiffs(start, currentIndex, comboArray, used);
-                if (!flag)
-                    start++;
-            }
-
-        }
-
-
-        for (int i = start; i < maxInt; i++){
-            if (!used[i] && pairDiffs(i, currentIndex, comboArray, used)){
-                used[i] = true;
-                comboArray[currentIndex] = i;
-                recursiveNextRank(comboArray, used, currentIndex + 1);
-                used[i] = false;
-            }
+            if (isValid)
+                count++;
+            
+            set = new HashSet<>();
+            // System.out.print(solution[s-1] + " ");
         }
 
         return false;
     }
 
-    public static boolean pairDiffs(int bruh, int currentIndex, int[] comboArray, boolean[] used){
-        for (int i = 1; i < currentIndex - 1; i++){
-            if (used[comboArray[currentIndex] - comboArray[i]])
-                return false;
+    // Increases the array by 1.
+    // Adjusts array if the increase is not at the end of the array.
+    public static void bump(int upperBound, int length)
+    {
+        for (int i = length-1; i >= 0; i--)
+        {
+            if (solution[i] < upperBound && i == length-1)
+            {
+                solution[i]++;
+                return;
+            }
+            else if (solution[i] < upperBound)
+            {
+                solution[i]++;
+                for (int j = i+1; j < length; j++)
+                    solution[j] = solution[i];
+                return;
+            }
         }
+    }
 
-        return true;
+    // Prints the array nicely.
+    public static void printSolution()
+    {
+        for (int i = 0; i < solution.length; i++)
+        {
+            System.out.print(solution[i]);
+            if (i < solution.length)
+                System.out.print(" ");
+        }
+        System.out.println();
+    }
+
+    public static void main(String[] args)
+    {
+        Scanner input = new Scanner(System.in);
+        int numCases = input.nextInt();
+        for (int currCase = 1; currCase <= numCases; currCase++)
+        {
+            int n = input.nextInt(); // upper bound of values
+            int s = input.nextInt(); // how many values we're working with
+            int k = input.nextInt(); // how deep to search before returning
+            solution = new int[s];
+            for (int i = 1; i <= s; i++)
+                solution[i-1] = i;
+
+            count = 0;
+
+            if (findSolution(n, s, k))
+                printSolution();
+            else
+                System.out.println("No solution found.");
+        }
     }
 }
