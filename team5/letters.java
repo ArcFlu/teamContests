@@ -1,72 +1,90 @@
 import java.util.*;
 
 public class letters {
-    public static HashMap<Character, ArrayList<Integer>> tilesMap;
-    public static ArrayList<String> wordsPossible;
-    public static int[] scoreWords;
-    public static ArrayList<HashMap<Character, ArrayList<Integer>>> savedMaps;
-
+    public static int maxScore;
+    public static int maxPossibleTilesScore;
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
         int numCases = scan.nextInt();
-
         for (int n = 0; n < numCases; n++){
-
+            maxPossibleTilesScore = 0;
             int numTiles = scan.nextInt();
-            tilesMap = new HashMap<>();
-
-            //tilesMap init, check for newLine error
+            HashMap<Character, ArrayList<Integer>> tilesLeft = new HashMap<>();
             for (int i = 0; i < numTiles; i++){
-                String curChar = scan.next();
+                Character curChar = scan.next().charAt(0);
                 int curCharScore = scan.nextInt();
-
-                Character thisChar = curChar.charAt(0);
-                if (!tilesMap.containsKey(thisChar)){
+                maxPossibleTilesScore += curCharScore;
+                if (!tilesLeft.containsKey(curChar)) {
                     ArrayList<Integer> tempList = new ArrayList<>();
                     tempList.add(curCharScore);
-                    tilesMap.put(thisChar,tempList);
+                    tilesLeft.put(curChar, tempList);
                 }
-                else{
-                    ArrayList<Integer> tempList = tilesMap.get(thisChar);
+                else {
+                    ArrayList<Integer> tempList = tilesLeft.get(curChar);
                     tempList.add(curCharScore);
                     Collections.sort(tempList);
-                    tilesMap.put(thisChar, tempList);
+                    Collections.reverse(tempList);
+                    tilesLeft.put(curChar, tempList);
                 }
-
-                // consume nextLine if needed
             }
 
             int numWords = scan.nextInt();
-            wordsPossible = new ArrayList<>();
+            ArrayList<String> wordsList = new ArrayList<>();
             for (int i = 0; i < numWords; i++){
-                wordsPossible.add(scan.next());
+                wordsList.add(scan.next());
             }
 
-            scoreWords = new int[numWords];
+            maxScore -= maxPossibleTilesScore;
+            recursion(tilesLeft, wordsList, 0, maxPossibleTilesScore);
 
-
-
+            System.out.println(maxScore);
         }
     }
 
-    public static int findScore(String curWord){
-        HashMap<Character, ArrayList<Integer>> tempMap = new HashMap<>(tilesMap);
-        int curScore = 0;
-        for (int i = 0; i < curWord.length(); i++){
-            char curChar = curWord.charAt(i);
-            if (!tempMap.containsKey(curChar))
-                return -1;
-            else{
-                ArrayList<Integer> curCharList = tempMap.get(curChar);
-                if (curCharList.size() == 0)
-                    return -1;
+    public static void recursion(HashMap<Character, ArrayList<Integer>> tilesLeft, ArrayList<String> wordsList, int totalScore, int curMaxTileScore){
+        HashMap<Character, ArrayList<Integer>> bruh = new HashMap<>(tilesLeft);
 
-                curScore += curCharList.get(curCharList.size() - 1);
-                curCharList.remove(curCharList.size() - 1);
+        for (int i = 0; i < wordsList.size(); i++){
+            String curWord = wordsList.get(i);
+            int curScore = 0;
+            tilesLeft = bruh;
+
+            for (int j = 0; j < curWord.length(); j++){
+                Character curChar = curWord.charAt(j);
+                if (tilesLeft.containsKey(curChar)){
+                    ArrayList<Integer> tempList = tilesLeft.get(curChar);
+                    if (tempList.size() <= 0){
+                        curScore = -1;
+                        break;
+                    }
+
+                    int tileScore = tempList.remove(0);
+
+                    curScore += tileScore;
+                    curMaxTileScore -= tileScore;
+                    tilesLeft.put(curChar, tempList);
+                }
+                else{
+                    curScore = -1;
+                    break;
+                }
             }
-        }
 
-        return curScore;
+            if (curScore == -1){
+                // reset then continue in loop
+                totalScore -= curScore;
+                curMaxTileScore += curScore;
+            }
+            else {
+                totalScore += curScore;
+                maxScore = Math.max(maxScore,  totalScore - curMaxTileScore);
+                recursion(tilesLeft, wordsList, totalScore, curMaxTileScore);
+                // reset then continue in loop
+                totalScore -= curScore;
+                curMaxTileScore += curScore;
+            }
+
+        }
     }
 
 }
