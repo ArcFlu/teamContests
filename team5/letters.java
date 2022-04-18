@@ -3,6 +3,7 @@ import java.util.*;
 public class letters {
     public static int maxScore;
     public static int maxPossibleTilesScore;
+    public static int[] totalFrequency;
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
         int numCases = scan.nextInt();
@@ -10,10 +11,15 @@ public class letters {
             maxPossibleTilesScore = 0;
             int numTiles = scan.nextInt();
             HashMap<Character, ArrayList<Integer>> tilesLeft = new HashMap<>();
+            totalFrequency = new int[26];
+
             for (int i = 0; i < numTiles; i++){
                 Character curChar = scan.next().charAt(0);
                 int curCharScore = scan.nextInt();
                 maxPossibleTilesScore += curCharScore;
+
+                totalFrequency[curChar - 'a'] += 1;
+
                 if (!tilesLeft.containsKey(curChar)) {
                     ArrayList<Integer> tempList = new ArrayList<>();
                     tempList.add(curCharScore);
@@ -35,13 +41,14 @@ public class letters {
             }
 
             maxScore -= maxPossibleTilesScore;
-            recursion(tilesLeft, wordsList, 0, maxPossibleTilesScore);
+
+            recursion(tilesLeft, wordsList, 0, maxPossibleTilesScore, totalFrequency);
 
             System.out.println(maxScore);
         }
     }
 
-    public static void recursion(HashMap<Character, ArrayList<Integer>> tilesLeft, ArrayList<String> wordsList, int totalScore, int curMaxTileScore){
+    public static void recursion(HashMap<Character, ArrayList<Integer>> tilesLeft, ArrayList<String> wordsList, int totalScore, int curMaxTileScore, int[] bruhFrequency){
         HashMap<Character, ArrayList<Integer>> bruh = new HashMap<>(tilesLeft);
 
         for (int i = 0; i < wordsList.size(); i++){
@@ -51,59 +58,58 @@ public class letters {
             ArrayList<Integer> storedScore = new ArrayList<>();
             int tempSubScore = 0;
 
+            int[] curFrequency = new int[26];
             for (int j = 0; j < curWord.length(); j++){
-                Character curChar = curWord.charAt(j);
-                if (tilesLeft.containsKey(curChar)){
+                char curChar = curWord.charAt(j);
+                curFrequency[curChar - 'a'] += 1;
+            }
+
+            boolean flag = false;
+            for (int j = 0; j < 26; j++){
+                if (curFrequency[j] > bruhFrequency[j]){
+                    flag = true;
+                    break;
+                }
+            }
+
+            if (flag)
+                continue;
+
+            for (int j = 0; j < 26; j++){
+                bruhFrequency[j] -= curFrequency[j];
+            }
+
+            for (int j = 0; j < 26; j++){
+                char curChar = (char) (j + 'a');
+                for (int k = 0; k < curFrequency[curChar - 'a']; k++) {
                     ArrayList<Integer> tempList = tilesLeft.get(curChar);
-                    if (tempList.isEmpty()){
-                        curScore = -1;
-                        break;
-                    }
-
                     int tileScore = tempList.remove(0);
-
                     curScore += tileScore;
-
-
                     tempSubScore += tileScore;
                     tilesLeft.put(curChar, tempList);
                     storedCharacters.add(curChar);
                     storedScore.add(tileScore);
                 }
-                else{
-                    curScore = -1;
-                    break;
-                }
             }
 
-            if (curScore == -1){
-                // reset then continue in loop
-                int m = 0;
-                for (Character tile : storedCharacters){
-                    ArrayList<Integer> tempList = tilesLeft.get(tile);
-                    tempList.add(storedScore.get(m++));
-                    tempList.sort(Collections.reverseOrder());
-                    tilesLeft.put(tile, tempList);
-                }
-//                totalScore -= curScore;
-//                curMaxTileScore += curScore;
-            }
-            else {
-                curMaxTileScore -= tempSubScore;
-                totalScore += curScore;
-                maxScore = Math.max(maxScore,  totalScore - curMaxTileScore);
-                recursion(tilesLeft, wordsList, totalScore, curMaxTileScore);
-                // reset then continue in loop
-                int m = 0;
-                for (Character tile : storedCharacters){
-                    ArrayList<Integer> tempList = tilesLeft.get(tile);
-                    tempList.add(storedScore.get(m++));
-                    tempList.sort(Collections.reverseOrder());
-                    tilesLeft.put(tile, tempList);
-                }
+            curMaxTileScore -= tempSubScore;
+            totalScore += curScore;
+            maxScore = Math.max(maxScore,  totalScore - curMaxTileScore);
+            recursion(tilesLeft, wordsList, totalScore, curMaxTileScore, bruhFrequency);
 
-                curMaxTileScore += tempSubScore;
-                totalScore -= curScore;
+            // reset then continue in loop
+            curMaxTileScore += tempSubScore;
+            totalScore -= curScore;
+
+            int m = 0;
+            for (Character tile : storedCharacters){
+                ArrayList<Integer> tempList = tilesLeft.get(tile);
+                tempList.add(storedScore.get(m++));
+                tempList.sort(Collections.reverseOrder());
+                tilesLeft.put(tile, tempList);
+            }
+            for (int j = 0; j < 26; j++){
+                bruhFrequency[j] += curFrequency[j];
             }
 
         }
