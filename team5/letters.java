@@ -47,13 +47,15 @@ public class letters {
         for (int i = 0; i < wordsList.size(); i++){
             String curWord = wordsList.get(i);
             int curScore = 0;
-            tilesLeft = bruh;
+            ArrayList<Character> storedCharacters = new ArrayList<>();
+            ArrayList<Integer> storedScore = new ArrayList<>();
+            int tempSubScore = 0;
 
             for (int j = 0; j < curWord.length(); j++){
                 Character curChar = curWord.charAt(j);
                 if (tilesLeft.containsKey(curChar)){
                     ArrayList<Integer> tempList = tilesLeft.get(curChar);
-                    if (tempList.size() <= 0){
+                    if (tempList.isEmpty()){
                         curScore = -1;
                         break;
                     }
@@ -61,8 +63,12 @@ public class letters {
                     int tileScore = tempList.remove(0);
 
                     curScore += tileScore;
-                    curMaxTileScore -= tileScore;
+
+
+                    tempSubScore += tileScore;
                     tilesLeft.put(curChar, tempList);
+                    storedCharacters.add(curChar);
+                    storedScore.add(tileScore);
                 }
                 else{
                     curScore = -1;
@@ -72,16 +78,32 @@ public class letters {
 
             if (curScore == -1){
                 // reset then continue in loop
-                totalScore -= curScore;
-                curMaxTileScore += curScore;
+                int m = 0;
+                for (Character tile : storedCharacters){
+                    ArrayList<Integer> tempList = tilesLeft.get(tile);
+                    tempList.add(storedScore.get(m++));
+                    tempList.sort(Collections.reverseOrder());
+                    tilesLeft.put(tile, tempList);
+                }
+//                totalScore -= curScore;
+//                curMaxTileScore += curScore;
             }
             else {
+                curMaxTileScore -= tempSubScore;
                 totalScore += curScore;
                 maxScore = Math.max(maxScore,  totalScore - curMaxTileScore);
                 recursion(tilesLeft, wordsList, totalScore, curMaxTileScore);
                 // reset then continue in loop
+                int m = 0;
+                for (Character tile : storedCharacters){
+                    ArrayList<Integer> tempList = tilesLeft.get(tile);
+                    tempList.add(storedScore.get(m++));
+                    tempList.sort(Collections.reverseOrder());
+                    tilesLeft.put(tile, tempList);
+                }
+
+                curMaxTileScore += tempSubScore;
                 totalScore -= curScore;
-                curMaxTileScore += curScore;
             }
 
         }
