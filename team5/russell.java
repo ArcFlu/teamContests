@@ -1,43 +1,51 @@
-import java.sql.SQLOutput;
 import java.util.*;
 
-public class russell {
+class russell {
+
     public static void main(String[] args) {
         Scanner scnr = new Scanner (System.in);
 
         while (scnr.hasNextDouble()) {
-            point t1 = new point(scnr.nextDouble(),scnr.nextDouble(),scnr.nextDouble());
-            point t2 = new point(scnr.nextDouble(),scnr.nextDouble(),scnr.nextDouble());
-            point t3 = new point(scnr.nextDouble(),scnr.nextDouble(),scnr.nextDouble());
-            point r = new point(scnr.nextDouble(),scnr.nextDouble(),scnr.nextDouble());
-            point v = new point(scnr.nextDouble(),scnr.nextDouble(),scnr.nextDouble());
+            point t1 = new point(scnr.nextDouble(), scnr.nextDouble(), scnr.nextDouble());
+            point t2 = new point(scnr.nextDouble(), scnr.nextDouble(), scnr.nextDouble());
+            point t3 = new point(scnr.nextDouble(), scnr.nextDouble(), scnr.nextDouble());
+            point r = new point(scnr.nextDouble(), scnr.nextDouble(), scnr.nextDouble());
+            point v = new point(scnr.nextDouble(), scnr.nextDouble(), scnr.nextDouble());
+            
+            //System.out.println("===================");
 
-            vector v1 = new vector (t2, t1);
-            vector v2 = new vector (t3, t1);
+            plane signPlane = new plane (t1, t2, t3);
 
-            line l = new line (r.x, r.y, r.z, v.x, v.y, v.z);
+            //check if russell and his view are on the same or opposite sides of the sign
+            double rDistance = signPlane.distance(r);
+            double vDistance = signPlane.distance(v);
 
-            vector n = v1.crossProd(v2);
+            //System.out.println(rDistance);
+            //System.out.println(vDistance);
+            //System.out.println(signPlane.d);
 
-            plane p = new plane(n.i, n.j, n.k, t1.x, t1.y, t1.z);
+            // if the distance between russell and the plane and the distance between
+            //   his view and the plane have the same polarity, then he can see it
+            if ((rDistance > signPlane.d && vDistance > signPlane.d) || (rDistance < signPlane.d && vDistance < signPlane.d)) {
+                System.out.println("Yes");
+                continue;
+            }
 
-            double num = p.d-((p.x*l.x)+(p.y*l.y)+(p.z*l.z));
-            double den = ((p.x*l.v.i)+(p.y*l.v.j)+(p.z*l.v.k));
-//            System.out.println("" + p.x + " " + p.y + " " + p.z + " " + p.d);
-            double poi_lam = num/den;
-//            System.out.println(poi_lam);
+            vector line = new vector(r, v);
+            double t = getT(signPlane, line);
+            point poi = line.getPoint(t);
+            //System.out.println("" + poi.x + " " + poi.y + " " + poi.z);
+            
+            double A1 = angle(new vector (poi, t1), new vector (poi, t2));
+            double A2 = angle(new vector (poi, t2), new vector (poi, t3));
+            double A3 = angle(new vector (poi, t3), new vector (poi, t1));
 
-            point poi = l.getPoint(poi_lam);
+            double total = A1+A2+A3;
+            //System.out.println("" + A1 + " " + " + " + A2 + " " + " + " + A3 + " " + " = " + total);
 
-            double A1 = angel(t1, poi, t2);
-            double A2 = angel(t2, poi, t3);
-            double A3 = angel(t3, poi, t1);
-
-            double res = (A1+A2+A3);
-
-//            System.out.println("ANGLES: " + A1 + " " + A2 + " " + A3 + " " + res);
-
-            if (Math.abs((2 * Math.PI) - res) <= 1e-9)
+            //System.out.println(Math.abs((Math.PI*2) - total));
+          
+            if (Math.abs((Math.PI*2) - total) < 0.000000001)
                 System.out.println("No");
             else
                 System.out.println("Yes");
@@ -46,85 +54,128 @@ public class russell {
 
     }
 
-    static double angel (point p1, point p2, point p3) {
+    static double angle (vector v, vector u) {
+        double num = v.dot(u);
+        double den = v.mag() * u.mag();
+        double cos =  num / den;
+        return Math.acos(cos);
+    }
 
-        vector v1 = new vector (p2, p1);
-        vector v2 = new vector (p2, p3);
-
-//        System.out.println("" + p1.x + p1.y + p1.z);
-//        System.out.println("" + p2.x + p2.y + p2.z);
-//        System.out.println("" + p3.x + p3.y + p3.z);
-
-        double num = (v1.i*v2.i) + (v1.j*v2.j) + (v1.k*v2.k);
-        double den = Math.sqrt(Math.pow(v1.i, 2) + Math.pow(v1.j, 2) + Math.pow(v1.k, 2))
-                * Math.sqrt(Math.pow(v2.i, 2) + Math.pow(v2.j, 2) + Math.pow(v2.k, 2));
-
-        return Math.acos(num/den);
+    static double getT (plane p, vector v) {
+        double num = p.d - (p.normal.i*v.start.x) - (p.normal.j*v.start.y) - (p.normal.k*v.start.z);
+        double den = (p.normal.i*v.i) + (p.normal.j*v.j) + (p.normal.k*v.k);
+        return num/den;
     }
 
     static class point {
+
         double x, y, z;
-        point (double X, double Y, double Z) {
-            x = X;
-            y = Y;
-            z = Z;
+
+        point (double x, double y, double z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
         }
+
+        point (point p) {
+            this.x = p.x;
+            this.y = p.y;
+            this.z = p.z;
+        }
+
     }
 
     static class vector {
+
         double i, j, k;
-        vector (double X, double Y, double Z) {
-            i = X;
-            j = Y;
-            k = Z;
+        point start;
+
+        vector (point a, point b) {
+
+            this.i = b.x - a.x;
+            this.j = b.y - a.y;
+            this.k = b.z - a.z;
+
+            this.start = new point(a.x, a.y, a.z);
+
         }
 
-        vector (point p1, point p2) {
-            i = p2.x-p1.x;
-            j = p2.y-p1.y;
-            k = p2.z-p1.z;
+        vector (vector v) {
+            this.i = v.i;
+            this.j = v.j;
+            this.k = v.k;
+
+            this.start = new point(v.start.x, v.start.y, v.start.z);
         }
 
-        vector crossProd (vector o) {
-            double xComp = (this.j*o.k) - (this.k*o.j);
-            double yComp = (this.k*o.i) - (this.i*o.k);
-            double zComp = (this.i*o.j) - (this.j*o.i);
+        vector (double i, double j, double k, point a) {
+            this.i = i;
+            this.j = j;
+            this.k = k;
 
-            return new vector (xComp, yComp, zComp);
+            this.start = new point(a);
+
+        }
+
+        double mag () {
+            double res = Math.pow(this.i, 2) + Math.pow(this.j, 2) + Math.pow(this.k, 2);
+            return Math.sqrt(res);
+        }
+
+        void scale(double magnitude) {
+            this.i = this.i * magnitude;
+            this.j = this.j * magnitude;
+            this.k = this.k * magnitude;
+        }
+
+        point getPoint (double distance) {
+            this.scale(distance);
+            return new point(this.start.x+this.i, this.start.y+this.j, this.start.z+this.k);
+        }
+
+        vector cross (vector o) {
+
+            double iComp = (this.j*o.k) - (this.k*o.j);
+            double jComp = (this.k*o.i) - (this.i*o.k);
+            double kComp = (this.i*o.j) - (this.j*o.i);
+
+            return (new vector(iComp, jComp, kComp, this.start));
+
+        }
+
+        double dot (vector o) {
+
+            double iComp = this.i * o.i;
+            double jComp = this.j * o.j;
+            double kComp = this.k * o.k;
+
+            return (iComp + jComp + kComp);
+
         }
 
     }
 
     static class plane {
-        double x, y, z, d;
-        plane (double X, double Y, double Z, double PX, double PY, double PZ) {
-            x = X;
-            y = Y;
-            z = Z;
-            d = (X*PX) + (Y*PY) + (Z*PZ);
-        }
-    }
 
-    static class line {
-        double x, y, z;
-        vector v;
-        line (double x1, double y1, double z1, double x2, double y2, double z2) {
-            x = x1;
-            y = y1;
-            z = z1;
-            v = new vector(new point(x1, y1, z1), new point(x2, y2, z2));
+        vector normal;
+        point onPlane;
+        double d;
+
+        plane (point p1, point p2, point p3) {
+            this.onPlane = new point(p2);
+
+            vector v1 = new vector (p2, p1);
+            vector v2 = new vector (p2, p3);
+
+            this.normal = v1.cross(v2);
+
+            this.d = (onPlane.x * this.normal.i) + (onPlane.y * this.normal.j) + (onPlane.z * this.normal.k);
         }
 
-        point getPoint(double lam) {
-            double rx = this.x + (this.v.i*lam);
-            double ry = this.y + (this.v.j*lam);
-            double rz = this.z + (this.v.k*lam);
-
-            return new point(rx, ry, rz);
+        double distance (point p) {
+            return (p.x * this.normal.i) + (p.y * this.normal.j) + (p.z * this.normal.k);
         }
 
     }
 
 }
-
-
