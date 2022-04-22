@@ -24,25 +24,33 @@ public class haircut {
         }
     }
 
-    public static int findBarberBetter(int numBarbers, int placeInLine, int[] barbers, int fastestTime) {
+    public static int findBarberBetter(int numBarbers, int placeInLine, double[] barbers, double fastestTime) {
         if (numBarbers >= placeInLine)
             return placeInLine;
         if (numBarbers == 1)
             return 1;
 
         int currCustomer = numBarbers;
-        int round = 1;
-        int time = fastestTime;
+        double round = 1;
+        double time = (double)fastestTime;
+        double[] ogTimes = Arrays.copyOf(barbers, numBarbers);
         while (true) {
-            for (int i = 0; i < numBarbers; i++){
-                if (time >= (barbers[i] * round)) {
+            for (int i = 0; i < numBarbers; i++) {
+                if (time >= barbers[i]) {
                     currCustomer++;
-                    if (currCustomer == placeInLine)
+                    if (currCustomer == placeInLine) {
+                        // System.out.println(round);
+
                         return (i+1);
+                    }
+                    barbers[i] += ogTimes[i];
+                    // System.out.println("Barber " + (i+1) + " update: " + barbers[i]);
+                    // System.out.println("ogTimes " + ogTimes[i]);
                 }
             }
-            fastestTime *= 2;
             round++;
+            time = (double)fastestTime * round;
+            System.out.println("round: " + round + " || time: " + time);
         }
     }
 
@@ -52,17 +60,21 @@ public class haircut {
         for (int currCase = 1; currCase <= numCases; currCase++) {
             int numBarbers = input.nextInt();
             int placeInLine = input.nextInt();
-            int[] barbers = new int[numBarbers];
-            int fastestTime = 1000000;
+            double[] barbers = new double[numBarbers];
+            double fastestTime = 1000000;
             for (int i = 0; i < numBarbers; i++) {
-                barbers[i] = input.nextInt();
+                barbers[i] = input.nextDouble();
                 if (barbers[i] < fastestTime)
                     fastestTime = barbers[i];
+                // System.out.println("Barber #" + (i+1) + ": " + barbers[i]);
             }
+            // System.out.println(fastestTime);
+            // System.out.println(placeInLine);
 
-//            int myBarber = findBarber(numBarbers, placeInLine, barbers);
+           // int myBarber = findBarber(numBarbers, placeInLine, barbers);
             int myBarber = findBarberBetter(numBarbers, placeInLine, barbers, fastestTime);
             System.out.println("Case #" + currCase + ": " + myBarber);
+            // System.out.println();
         }
     }
 }
