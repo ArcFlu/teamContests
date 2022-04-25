@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class speed {
+public class speed3 {
     public static double[] distancesArray;
     public static double[] speedArray;
 
