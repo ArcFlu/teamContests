@@ -4,38 +4,28 @@ public class speed {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
         int numSegments = scan.nextInt();
-        double totalTime = scan.nextDouble();
-        double[][] milesTimeArray = new double[numSegments][2];
+        int totalTime = scan.nextInt();
+        int[][] milesTimeArray = new int[numSegments][2];
+        double lowestSpeed = Double.MAX_VALUE;
         for (int i = 0; i < numSegments; i++){
-            milesTimeArray[i][0] = scan.nextDouble();
-            milesTimeArray[i][1] = scan.nextDouble();
+            milesTimeArray[i][0] = scan.nextInt();
+            milesTimeArray[i][1] = scan.nextInt();
+            lowestSpeed = Math.min(milesTimeArray[i][1], lowestSpeed);
         }
-        double low = Double.MIN_VALUE;
-        double high = Double.MAX_VALUE;
+        double low = -lowestSpeed;
+        double high = 2_000_000;
         double tempTime = 0;
 
 
         double midPoint = low + (high - low) / 2;
 
-        while (Math.abs(high - low) > 0.0000000001){
-            midPoint = low + (high - low) / 2;
-            boolean flag = false;
+        while ((high - low) > 1e-9){
+            midPoint = (low + high) / 2;
             tempTime = 0;
             for (int i = 0; i < numSegments; i++){
                 double tempSegment = milesTimeArray[i][0];
                 double tempSpeed = milesTimeArray[i][1];
-                tempSpeed += midPoint;
-                if (tempSpeed <= 0){
-                    flag = true;
-                    break;
-                }
-
-                tempTime += tempSegment / tempSpeed;
-            }
-
-            if (flag){
-                low = midPoint;
-                continue;
+                tempTime += tempSegment / (tempSpeed + midPoint);
             }
 
             if (tempTime < totalTime){
@@ -46,11 +36,10 @@ public class speed {
             else
                 break;
 
-            System.out.println(high);
 
         }
 
-        System.out.printf("%.9f", low);
+        System.out.printf("%.9f\n", midPoint);
 
     }
 }
